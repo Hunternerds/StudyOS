@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if subject else 'New' }} subject · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head"><div><p class="eyebrow">Subjects</p><h1>{{ 'Edit subject' if subject else 'New subject' }}</h1></div></header>
+<section class="panel narrow">
+  <form method="post" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Name</span><input name="name" value="{{ form.name }}" maxlength="60" required autofocus></label>
+    <label class="field"><span>Description <em>(optional)</em></span><textarea name="description" rows="3" maxlength="400">{{ form.description }}</textarea></label>
+    <fieldset class="field"><legend>Color</legend>
+      <div class="swatches">
+        {% for c in palette %}<label class="swatch" style="--c: {{ c }}"><input type="radio" name="color" value="{{ c }}" {{ 'checked' if form.color == c }}><i></i><span class="sr">{{ c }}</span></label>{% endfor %}
+        <label class="swatch swatch-custom" title="Custom color"><input type="color" value="{{ form.color }}" data-color-target><span class="sr">Custom color</span></label>
+      </div>
+    </fieldset>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{{ url_for('subjects.detail', subject_id=subject.id) if subject else url_for('subjects.index') }}">Cancel</a>
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if subject else 'Create subject' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

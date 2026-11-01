@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import empty %}
+{% block title %}Notes · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><p class="eyebrow">Write</p><h1>Notes</h1></div>
+  <a class="btn btn-primary" href="{{ url_for('notes.create', subject=subject) }}">{{ icon('plus') }}<span>New note</span></a>
+</header>
+<form class="toolbar" method="get" role="search">
+  <label class="searchbox">{{ icon('search') }}<input type="search" name="q" value="{{ q }}" placeholder="Search notes" maxlength="100" aria-label="Search notes"></label>
+  <select name="subject" aria-label="Subject" data-autosubmit>
+    <option value="">All subjects</option>{% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if subject == s.id }}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+</form>
+{% if notes %}
+<div class="note-list">
+  {% for n in notes %}
+  <a class="note-card" href="{{ url_for('notes.edit', note_id=n.id) }}">
+    <strong>{{ n.title }}</strong>
+    <p>{{ n.preview or 'Empty note' }}</p>
+    <small>{% if n.subject_name %}<span class="dot" style="--c: {{ n.subject_color }}"></span>{{ n.subject_name }} · {% endif %}{{ n.updated_at|localdt('%d %b %Y') }}</small>
+  </a>
+  {% endfor %}
+</div>
+{% elif q or subject %}
+<section class="panel">{{ empty('search', 'No notes match', 'Try another search or subject.', url_for('notes.index'), 'Clear') }}</section>
+{% else %}
+<section class="panel">{{ empty('notes', 'No notes yet', 'Write your first note — it saves automatically.', url_for('notes.create'), 'New note') }}</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import bars, hbars, empty %}
+{% block title %}Study history · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head"><div><p class="eyebrow">Progress</p><h1>Study history</h1></div></header>
+
+<form class="toolbar filters" method="get" id="historyFilter">
+  <div class="seg seg-compact" role="group" aria-label="Date range">
+    {% for key, label in presets %}<a class="seg-item{% if range_key == key %} active{% endif %}" href="{{ url_for('analytics.history', range=key, subject=subject) }}">{{ label }}</a>{% endfor %}
+  </div>
+  <select name="subject" aria-label="Subject" data-autosubmit>
+    <option value="">All subjects</option><option value="none" {{ 'selected' if subject == 'none' }}>General study</option>
+    {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if subject == s.id }}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <div class="daterange">
+    <label><span class="sr">From</span><input type="date" name="from" value="{{ start.isoformat() }}" max="{{ today.isoformat() }}"></label>
+    <span class="muted">→</span>
+    <label><span class="sr">To</span><input type="date" name="to" value="{{ end.isoformat() }}" max="{{ today.isoformat() }}"></label>
+    <button class="btn btn-ghost btn-sm" type="submit">Apply</button>
+  </div>
+</form>
+
+<section class="panel statbar statbar-4">
+  <div class="stat">{{ icon('clock') }}<strong>{{ totals.minutes }}</strong><span>Focused minutes</span></div>
+  <div class="stat">{{ icon('history') }}<strong>{{ totals.hours }}</strong><span>Study hours</span></div>
+  <div class="stat">{{ icon('timer') }}<strong>{{ totals.sessions }}</strong><span>Sessions</span></div>
+  <div class="stat">{{ icon('target') }}<strong>{{ totals.average }}m</strong><span>Avg. session</span></div>
+</section>
+
+<div class="grid">
+  <section class="panel wide"><h2>{{ main_chart.title }}</h2><p class="muted small">{{ start|string }} to {{ end|string }}</p>
+    {% if totals.minutes %}{{ bars(main_chart['items'], dense=(main_chart['items']|length > 10)) }}{% else %}{{ empty('history', 'No study sessions in this range', 'Try a wider range or start a focus session.', url_for('timer.index'), 'Start focus') }}{% endif %}
+  </section>
+  <section class="panel"><h2>Time by subject</h2>
+    {% if by_subject %}{{ hbars(by_subject) }}{% else %}{{ empty('subjects', 'No data', 'Nothing to show for this filter.') }}{% endif %}
+  </section>
+  <section class="panel"><h2>Last 8 weeks</h2>{{ bars(weekly, dense=True) }}</section>
+  <section class="panel"><h2>Last 6 months</h2>{{ bars(monthly) }}</section>
+  <section class="panel wide"><h2>Sessions in range</h2>
+    {% if sessions %}
+    <ul class="rows">{% for s in sessions %}<li class="row"><span class="dot" style="--c: {{ s.color }}"></span><div class="row-main"><strong>{{ s.subject }}</strong><small>{{ s.studied_on|shortdate }}{% if s.created_at %} · {{ s.created_at|localdt('%H:%M') }}{% endif %}</small></div><b>{{ s.duration|minutes }}</b></li>{% endfor %}</ul>
+    {% else %}{{ empty('timer', 'No sessions', 'Completed focus sessions in this range are listed here.') }}{% endif %}
+  </section>
+</div>
+{% endblock %}

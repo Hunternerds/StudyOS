@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import empty %}
+{% block title %}Subjects · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><p class="eyebrow">Library</p><h1>Subjects</h1></div>
+  <a class="btn btn-primary" href="{{ url_for('subjects.create') }}">{{ icon('plus') }}<span>New subject</span></a>
+</header>
+{% if subjects %}
+<div class="tiles">
+  {% for s in subjects %}
+  <a class="tile" href="{{ url_for('subjects.detail', subject_id=s.id) }}" style="--c: {{ s.color }}">
+    <span class="tile-bar"></span>
+    <strong>{{ s.name }}</strong>
+    <p class="muted small">{{ s.description or 'No description' }}</p>
+    <dl class="tile-meta">
+      <div><dt>Studied</dt><dd>{{ s.minutes|minutes }}</dd></div>
+      <div><dt>Pending</dt><dd>{{ s.pending }}</dd></div>
+      <div><dt>Notes</dt><dd>{{ s.notes }}</dd></div>
+      <div><dt>Cards</dt><dd>{{ s.cards }}</dd></div>
+    </dl>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<section class="panel">{{ empty('subjects', 'Create your first subject', 'Subjects organise your assignments, notes, flashcards and study time.', url_for('subjects.create'), 'New subject') }}</section>
+{% endif %}
+{% endblock %}

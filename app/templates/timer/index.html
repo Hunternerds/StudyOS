@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Focus Timer · StudyOS{% endblock %}
+{% block body_class %}page-timer{% endblock %}
+{% block content %}
+<div class="timer" id="timer" data-state="idle" data-mode="focus">
+  <header class="page-head timer-chrome"><h1>Focus Timer</h1></header>
+
+  <div class="seg timer-chrome" id="modeTabs" role="tablist" aria-label="Timer mode">
+    <button class="seg-item active" role="tab" type="button" data-mode="focus" aria-selected="true">Focus</button>
+    <button class="seg-item" role="tab" type="button" data-mode="short" aria-selected="false">Short break</button>
+    <button class="seg-item" role="tab" type="button" data-mode="long" aria-selected="false">Long break</button>
+    <button class="seg-item" role="tab" type="button" data-mode="custom" aria-selected="false">Custom</button>
+  </div>
+
+  <div class="custom-row timer-chrome" id="customRow" hidden>
+    <label class="field"><span>Minutes</span><input type="number" id="customMin" min="1" max="600" value="45" inputmode="numeric"></label>
+    <label class="switch"><input type="checkbox" id="customCounts" checked><i></i><span>Count as study time</span></label>
+  </div>
+
+  <label class="subject-pick timer-chrome">
+    <span>Subject</span>
+    <select id="subjectSel">
+      <option value="">General study</option>
+      {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if preset_subject == s.id }}>{{ s.name }}</option>{% endfor %}
+    </select>
+  </label>
+
+  <section class="stage" aria-label="Timer">
+    <p class="stage-label" id="stageLabel">Focus</p>
+    <div class="ring">
+      <svg viewBox="0 0 220 220" aria-hidden="true">
+        <circle class="ring-track" cx="110" cy="110" r="100"/>
+        <circle class="ring-prog" id="ringProg" cx="110" cy="110" r="100" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="0"/>
+      </svg>
+      <div class="ring-center">
+        <output class="clock" id="clock" aria-live="off">25:00</output>
+        <span class="ring-sub" id="stageSub">Ready</span>
+      </div>
+    </div>
+    <p class="stage-subject" id="stageSubject"></p>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <p class="muted small" id="counter">Session 1 of 4</p>
+  </section>
+
+  <div class="controls" id="controls">
+    <button class="icon-btn lg" id="btnReset" type="button" aria-label="Reset timer">{{ icon('reset') }}</button>
+    <button class="btn btn-primary btn-lg" id="btnMain" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use id="mainIcon" href="#i-play"/></svg><span id="mainLabel">Start</span></button>
+    <button class="icon-btn lg" id="btnSkip" type="button" aria-label="Skip to next session">{{ icon('skip') }}</button>
+    <button class="icon-btn lg" id="btnFull" type="button" aria-label="Enter fullscreen" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use id="fullIcon" href="#i-fullscreen"/></svg></button>
+  </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+
+
+
+
+  <details class="panel timer-chrome" id="timerSettings">
+    <summary>{{ icon('settings') }}<span>Timer settings</span></summary>
+    {% set s = timer_settings %}
+    <form class="form" id="timerForm" method="post" action="{{ url_for('settings.save_timer') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% include "partials/timer_fields.html" %}
+      <div class="form-actions"><button class="btn btn-primary btn-sm" type="submit">Save settings</button></div>
+    </form>
+  </details>
+</div>
+<script type="application/json" id="timerConfig">{{ timer_settings|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script src="{{ asset('js/timer-core.js') }}"></script>
+<script src="{{ asset('js/timer.js') }}" defer></script>
+{% endblock %}

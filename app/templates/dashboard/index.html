@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import bars, donut, hbars, empty %}
+{% block title %}Dashboard · StudyOS{% endblock %}
+{% block content %}
+<header class="hero">
+  <div>
+    <p class="eyebrow">{{ now.strftime('%A, %d %B %Y') }}</p>
+    <h1>{{ greeting }}, {{ first_name }}.</h1>
+    <p class="lede">{{ message }}</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('timer.index') }}">{{ icon('play') }}<span>Start focus</span></a>
+</header>
+
+<section class="panel statbar" aria-label="Academic statistics">
+  <div class="stat">{{ icon('subjects') }}<strong>{{ stats.subjects }}</strong><span>Subjects</span></div>
+  <div class="stat">{{ icon('tasks') }}<strong>{{ stats.tasks_total }}</strong><span>Assignments</span></div>
+  <div class="stat">{{ icon('check') }}<strong>{{ stats.tasks_done }}</strong><span>Completed</span></div>
+  <div class="stat">{{ icon('flag') }}<strong>{{ stats.tasks_pending }}</strong><span>Pending</span></div>
+  <div class="stat">{{ icon('clock') }}<strong>{{ stats.hours }}</strong><span>Study hours</span></div>
+  <div class="stat">{{ icon('timer') }}<strong>{{ stats.sessions }}</strong><span>Focus sessions</span></div>
+  <div class="stat">{{ icon('notes') }}<strong>{{ stats.notes }}</strong><span>Notes</span></div>
+  <div class="stat">{{ icon('cards') }}<strong>{{ stats.flashcards }}</strong><span>Flashcards</span></div>
+</section>
+
+<div class="grid">
+  <section class="panel">
+    <h2>This week</h2>
+    <p class="muted small">{{ week_total|minutes }} focused in the last 7 days</p>
+    {% if week_total %}{{ bars(week) }}{% else %}{{ empty('timer', 'No focus time yet this week', 'Finish a focus session and your weekly activity appears here.', url_for('timer.index'), 'Start a session') }}{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Assignments</h2>
+    {% if stats.tasks_total %}
+    <div class="split">
+      {{ donut(stats.completion_rate, 'complete') }}
+      <ul class="kv">
+        <li><span>Completed</span><b>{{ stats.tasks_done }}</b></li>
+        <li><span>Pending</span><b>{{ stats.tasks_pending }}</b></li>
+      </ul>
+    </div>
+    {% else %}{{ empty('tasks', 'No assignments yet', 'Add an assignment to track your deadlines.', url_for('tasks.create'), 'Add assignment') }}{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Study streak</h2>
+    <div class="streak">
+      <div class="streak-num">{{ icon('flame') }}<strong>{{ streak.current }}</strong><span>day{{ '' if streak.current == 1 else 's' }}</span></div>
+      <div class="streak-week" aria-label="Last 7 days">
+        {% for d in streak.week %}<span class="streak-day{% if d.studied %} on{% endif %}" title="{{ d.date.strftime('%a %d %b') }}"><i></i><small>{{ d.date.strftime('%a')[:1] }}</small></span>{% endfor %}
+      </div>
+    </div>
+    {% if not streak.current %}<p class="muted small">Study today to start a streak.</p>{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Time by subject</h2>
+    {% if by_subject %}{{ hbars(by_subject) }}{% else %}{{ empty('subjects', 'Nothing logged yet', 'Pick a subject when you start the timer to see where your time goes.') }}{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Upcoming deadlines</h2><a class="link small" href="{{ url_for('tasks.index') }}">All</a></div>
+    {% if deadlines %}
+    <ul class="rows">
+      {% for t in deadlines %}
+      <li class="row"><div class="row-main"><strong>{{ t.title }}</strong><small class="{{ 'bad' if t.overdue }}">{{ t.due_text }}{% if t.subject %} · {{ t.subject }}{% endif %}</small></div><span class="pill pill-{{ t.priority|lower }}">{{ t.priority }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}{{ empty('calendar', 'No upcoming deadlines', 'Assignments with a due date will show up here.') }}{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Recent focus sessions</h2><a class="link small" href="{{ url_for('analytics.history') }}">History</a></div>
+    {% if sessions %}
+    <ul class="rows">
+      {% for s in sessions %}
+      <li class="row"><span class="dot" style="--c: {{ s.color }}"></span><div class="row-main"><strong>{{ s.subject }}</strong><small>{{ s.studied_on|shortdate }}</small></div><b>{{ s.duration|minutes }}</b></li>
+      {% endfor %}
+    </ul>
+    {% else %}{{ empty('timer', 'No sessions yet', 'Your completed focus sessions are listed here.') }}{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Recently completed</h2>
+    {% if done_tasks %}
+    <ul class="rows">{% for t in done_tasks %}<li class="row">{{ icon('check', 'ok') }}<div class="row-main"><strong>{{ t.title }}</strong><small>{{ t.done_at|localdt('%d %b') }}</small></div></li>{% endfor %}</ul>
+    {% else %}{{ empty('check', 'Nothing completed yet', 'Tick off an assignment and it lands here.') }}{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>New notes</h2><a class="link small" href="{{ url_for('notes.index') }}">All</a></div>
+    {% if new_notes %}
+    <ul class="rows">{% for n in new_notes %}<li class="row"><div class="row-main"><a href="{{ url_for('notes.edit', note_id=n.id) }}"><strong>{{ n.title }}</strong></a><small>{{ n.created_at|localdt('%d %b %Y') }}</small></div></li>{% endfor %}</ul>
+    {% else %}{{ empty('notes', 'No notes yet', 'Capture what you learn.', url_for('notes.create'), 'New note') }}{% endif %}
+  </section>
+</div>
+{% endblock %}

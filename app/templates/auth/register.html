@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Create account · StudyOS{% endblock %}
+{% block body_class %}auth{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <img class="auth-logo" src="{{ asset('images/logo-192.png') }}" width="96" height="96" alt="StudyOS">
+  <h1>Create your workspace</h1>
+  <p class="muted">Your subjects, notes and progress stay private to you.</p>
+  <form method="post" action="{{ url_for('auth.register') }}" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Name</span>
+      <input type="text" name="name" value="{{ form.name }}" autocomplete="name" required maxlength="60">
+    </label>
+    <label class="field"><span>Email</span>
+      <input type="email" name="email" value="{{ form.email }}" autocomplete="username" inputmode="email" required maxlength="254">
+    </label>
+    <label class="field"><span>Password</span>
+      <input type="password" name="password" autocomplete="new-password" required minlength="8" maxlength="128">
+      <small>At least 8 characters, with letters and a number or symbol.</small>
+    </label>
+    <label class="field"><span>Confirm password</span>
+      <input type="password" name="confirm" autocomplete="new-password" required maxlength="128">
+    </label>
+    <button class="btn btn-primary btn-block" type="submit">Create account</button>
+  </form>
+  <p class="muted small">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+</section>
+{% endblock %}

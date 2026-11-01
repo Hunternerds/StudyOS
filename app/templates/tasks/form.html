@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if task else 'New' }} assignment · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head"><div><p class="eyebrow">Assignments</p><h1>{{ 'Edit assignment' if task else 'New assignment' }}</h1></div></header>
+<section class="panel narrow">
+  <form method="post" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Title</span><input name="title" value="{{ form.title }}" maxlength="200" required autofocus></label>
+    <label class="field"><span>Details <em>(optional)</em></span><textarea name="description" rows="3" maxlength="2000">{{ form.description }}</textarea></label>
+    <div class="field-row">
+      <label class="field"><span>Subject</span>
+        <select name="subject_id"><option value="">None</option>{% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if form.subject_id == s.id }}>{{ s.name }}</option>{% endfor %}</select>
+      </label>
+      <label class="field"><span>Deadline</span><input type="date" name="due_date" value="{{ form.due_date }}"></label>
+    </div>
+    <fieldset class="field"><legend>Priority</legend>
+      <div class="seg seg-form">{% for p in priorities %}<label class="seg-item"><input type="radio" name="priority" value="{{ p }}" {{ 'checked' if form.priority == p }}><span>{{ p }}</span></label>{% endfor %}</div>
+    </fieldset>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{{ url_for('tasks.index') }}">Cancel</a>
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if task else 'Add assignment' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

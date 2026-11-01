@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · StudyOS{% endblock %}
+{% block body_class %}{% if not current_user %}auth{% endif %}{% endblock %}
+{% block content %}
+<section class="panel narrow center">
+  <p class="eyebrow">Error {{ code }}</p>
+  <h1>{{ title }}</h1>
+  <p class="muted">{{ text }}</p>
+  <p><a class="btn btn-primary" href="{{ url_for('dashboard.index') if current_user else url_for('auth.login') }}">{{ 'Back to dashboard' if current_user else 'Go to sign in' }}</a></p>
+</section>
+{% endblock %}

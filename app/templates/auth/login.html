@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sign in · StudyOS{% endblock %}
+{% block body_class %}auth{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <img class="auth-logo" src="{{ asset('images/logo-192.png') }}" width="96" height="96" alt="StudyOS">
+  <h1>Welcome back</h1>
+  <p class="muted">Sign in to your private study workspace.</p>
+  <form method="post" action="{{ url_for('auth.login') }}" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <label class="field"><span>Email</span>
+      <input type="email" name="email" value="{{ email }}" autocomplete="username" inputmode="email" required autofocus maxlength="254">
+    </label>
+    <label class="field"><span>Password</span>
+      <input type="password" name="password" autocomplete="current-password" required maxlength="256">
+    </label>
+    <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+  </form>
+  <p class="muted small">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+</section>
+{% endblock %}

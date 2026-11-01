@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if card else 'New' }} flashcard · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head"><div><p class="eyebrow">Flashcards</p><h1>{{ 'Edit card' if card else 'New card' }}</h1></div></header>
+<section class="panel narrow">
+  <form method="post" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Subject</span>
+      <select name="subject_id"><option value="">None</option>{% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if form.subject_id == s.id }}>{{ s.name }}</option>{% endfor %}</select>
+    </label>
+    <label class="field"><span>Question</span><textarea name="question" rows="3" maxlength="1000" required autofocus>{{ form.question }}</textarea></label>
+    <label class="field"><span>Answer</span><textarea name="answer" rows="4" maxlength="2000" required>{{ form.answer }}</textarea></label>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{{ url_for('flashcards.manage') }}">Cancel</a>
+      {% if not card %}<button class="btn btn-ghost" type="submit" name="another" value="1">Save &amp; add another</button>{% endif %}
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if card else 'Create card' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

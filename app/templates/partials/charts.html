@@ -1,0 +1,41 @@
+{# Server-rendered charts: no JS, real data only. #}
+{% macro bars(items, dense=False) -%}
+{% set peak = (items | map(attribute='minutes') | max) if items else 0 %}
+<div class="bars{% if dense %} bars-dense{% endif %}" role="img" aria-label="Study minutes per period">
+  {% for it in items %}
+  <div class="bar" title="{{ it.sub }}: {{ it.minutes|minutes }}">
+    <span class="bar-val">{% if it.minutes and not dense %}{{ it.minutes|minutes }}{% endif %}</span>
+    <span class="bar-col"><i style="--h: {{ ((it.minutes / peak * 100) if peak else 0)|round(1) }}%"></i></span>
+    <span class="bar-lbl">{{ it.label }}</span>
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro donut(percent, label) -%}
+<div class="donut" role="img" aria-label="{{ label }}: {{ percent }}%">
+  <svg viewBox="0 0 100 100"><circle class="donut-track" cx="50" cy="50" r="42"/><circle class="donut-fill" cx="50" cy="50" r="42" pathLength="100" stroke-dasharray="{{ percent }} 100"/></svg>
+  <div><strong>{{ percent }}%</strong><small>{{ label }}</small></div>
+</div>
+{%- endmacro %}
+
+{% macro hbars(items) -%}
+{% set peak = (items | map(attribute='minutes') | max) if items else 0 %}
+<ul class="hbars">
+  {% for it in items %}
+  <li>
+    <div class="hbar-top"><span class="dot" style="--c: {{ it.color }}"></span><span class="hbar-name">{{ it.name }}</span><span class="hbar-val">{{ it.minutes|minutes }}</span></div>
+    <div class="hbar-track"><i style="--w: {{ ((it.minutes / peak * 100) if peak else 0)|round(1) }}%; --c: {{ it.color }}"></i></div>
+  </li>
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro empty(icon_name, title, text, href=None, cta=None) -%}
+<div class="empty">
+  {{ icon(icon_name) }}
+  <strong>{{ title }}</strong>
+  <p>{{ text }}</p>
+  {% if href %}<a class="btn btn-primary btn-sm" href="{{ href }}">{{ cta }}</a>{% endif %}
+</div>
+{%- endmacro %}

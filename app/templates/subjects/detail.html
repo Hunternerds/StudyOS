@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import bars, empty %}
+{% block title %}{{ subject.name }} · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head" style="--c: {{ subject.color }}">
+  <div><p class="eyebrow"><span class="dot"></span> Subject</p><h1>{{ subject.name }}</h1>{% if subject.description %}<p class="muted">{{ subject.description }}</p>{% endif %}</div>
+  <div class="head-actions">
+    <a class="btn btn-primary" href="{{ url_for('timer.index', subject=subject.id) }}">{{ icon('play') }}<span>Study</span></a>
+    <a class="icon-btn" href="{{ url_for('subjects.edit', subject_id=subject.id) }}" aria-label="Edit subject">{{ icon('edit') }}</a>
+    <form method="post" action="{{ url_for('subjects.delete', subject_id=subject.id) }}" data-confirm="Delete “{{ subject.name }}”? Its tasks, notes, flashcards and study sessions are kept but become unassigned.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="icon-btn danger" type="submit" aria-label="Delete subject">{{ icon('trash') }}</button>
+    </form>
+  </div>
+</header>
+
+<section class="panel statbar statbar-6">
+  <div class="stat">{{ icon('clock') }}<strong>{{ stats.minutes|minutes }}</strong><span>Study time</span></div>
+  <div class="stat">{{ icon('timer') }}<strong>{{ stats.sessions }}</strong><span>Sessions</span></div>
+  <div class="stat">{{ icon('flag') }}<strong>{{ stats.pending }}</strong><span>Pending</span></div>
+  <div class="stat">{{ icon('check') }}<strong>{{ stats.done }}</strong><span>Done</span></div>
+  <div class="stat">{{ icon('notes') }}<strong>{{ stats.notes }}</strong><span>Notes</span></div>
+  <div class="stat">{{ icon('cards') }}<strong>{{ stats.cards }}</strong><span>Cards</span></div>
+</section>
+
+<div class="grid">
+  <section class="panel"><h2>Last 7 days</h2>
+    {% if week|sum(attribute='minutes') %}{{ bars(week) }}{% else %}{{ empty('timer', 'No study time this week', 'Start the timer with this subject selected.', url_for('timer.index', subject=subject.id), 'Start focus') }}{% endif %}
+  </section>
+  <section class="panel"><div class="panel-head"><h2>Pending assignments</h2><a class="link small" href="{{ url_for('tasks.create', subject=subject.id) }}">Add</a></div>
+    {% if tasks %}<ul class="rows">{% for t in tasks %}<li class="row"><div class="row-main"><a href="{{ url_for('tasks.edit', task_id=t.id) }}"><strong>{{ t.title }}</strong></a><small>{{ ('Due ' ~ (t.due_date|shortdate)) if t.due_date else 'No deadline' }}</small></div><span class="pill pill-{{ t.priority|lower }}">{{ t.priority }}</span></li>{% endfor %}</ul>
+    {% else %}{{ empty('tasks', 'Nothing pending', 'Assignments for this subject appear here.') }}{% endif %}
+  </section>
+  <section class="panel"><h2>Recent sessions</h2>
+    {% if sessions %}<ul class="rows">{% for s in sessions %}<li class="row"><div class="row-main"><strong>{{ s.studied_on|shortdate }}</strong></div><b>{{ s.duration|minutes }}</b></li>{% endfor %}</ul>
+    {% else %}{{ empty('history', 'No sessions yet', 'Completed focus sessions for this subject are listed here.') }}{% endif %}
+  </section>
+  <section class="panel"><h2>Jump to</h2>
+    <div class="chips">
+      <a class="chip" href="{{ url_for('notes.index', subject=subject.id) }}">{{ icon('notes') }}Notes</a>
+      <a class="chip" href="{{ url_for('flashcards.study', subject=subject.id, mode='all') }}">{{ icon('cards') }}Flashcards</a>
+      <a class="chip" href="{{ url_for('tasks.index', subject=subject.id) }}">{{ icon('tasks') }}Assignments</a>
+      <a class="chip" href="{{ url_for('analytics.history', subject=subject.id) }}">{{ icon('history') }}History</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

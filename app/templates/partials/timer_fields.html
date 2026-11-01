@@ -1,0 +1,18 @@
+{# Shared by Settings page and the timer drawer. `s` = settings dict. #}
+<div class="field-grid">
+  <label class="field"><span>Focus (min)</span><input type="number" name="focus_min" min="1" max="180" value="{{ s.focus_min }}" inputmode="numeric" required></label>
+  <label class="field"><span>Short break (min)</span><input type="number" name="short_min" min="1" max="60" value="{{ s.short_min }}" inputmode="numeric" required></label>
+  <label class="field"><span>Long break (min)</span><input type="number" name="long_min" min="1" max="120" value="{{ s.long_min }}" inputmode="numeric" required></label>
+  <label class="field"><span>Sessions before long break</span><input type="number" name="sessions_before_long" min="1" max="12" value="{{ s.sessions_before_long }}" inputmode="numeric" required></label>
+</div>
+<div class="switches">
+  <label class="switch"><input type="checkbox" name="auto_start_breaks" value="1" {{ 'checked' if s.auto_start_breaks }}><i></i><span>Auto-start breaks</span></label>
+  <label class="switch"><input type="checkbox" name="auto_start_focus" value="1" {{ 'checked' if s.auto_start_focus }}><i></i><span>Auto-start focus sessions</span></label>
+  <label class="switch"><input type="checkbox" name="sound_enabled" value="1" {{ 'checked' if s.sound_enabled }}><i></i><span>Sound notification when a session ends</span></label>
+</div>
+<div class="field-grid">
+  <label class="field"><span>Ambient sound</span>
+    <select name="ambient">{% for key, label in ambients %}<option value="{{ key }}" {{ 'selected' if s.ambient == key }}>{{ label }}</option>{% endfor %}</select>
+  </label>
+  <label class="field"><span>Ambient volume <output>{{ s.ambient_volume }}</output></span><input type="range" name="ambient_volume" min="0" max="100" value="{{ s.ambient_volume }}" data-output></label>
+</div>

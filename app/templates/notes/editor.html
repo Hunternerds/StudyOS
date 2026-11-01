@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ note.title if note else 'New note' }} · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><p class="eyebrow">Notes</p><h1>{{ 'Edit note' if note else 'New note' }}</h1></div>
+  {% if note %}
+  <form method="post" action="{{ url_for('notes.delete', note_id=note.id) }}" data-confirm="Delete this note? This can't be undone.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="icon-btn danger" type="submit" aria-label="Delete note">{{ icon('trash') }}</button>
+  </form>
+  {% endif %}
+</header>
+<form method="post" class="editor panel" id="noteForm" data-note-id="{{ note.id if note else '' }}" data-autosave="{{ url_for('notes.autosave') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input class="editor-title" name="title" value="{{ note.title if note else '' }}" placeholder="Title" maxlength="150" aria-label="Note title">
+  <select name="subject_id" aria-label="Subject">
+    <option value="">No subject</option>
+    {% set chosen = note.subject_id if note else preset_subject %}
+    {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if chosen == s.id }}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <textarea class="editor-body" name="content" placeholder="Start writing…" aria-label="Note content" maxlength="100000">{{ note.content if note else '' }}</textarea>
+  <div class="editor-foot">
+    <small class="muted" id="saveState">{% if note %}Created {{ note.created_at|localdt }} · Modified {{ note.updated_at|localdt }}{% else %}Not saved yet{% endif %}</small>
+    <button class="btn btn-primary btn-sm" type="submit">Save</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ asset('js/notes.js') }}" defer></script>{% endblock %}

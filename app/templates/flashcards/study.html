@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import empty %}
+{% block title %}Flashcards · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Flashcards</h1>
+  <div class="head-actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('flashcards.manage') }}">{{ icon('list') }}<span>Manage</span></a>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('flashcards.create', subject=subject if subject and subject != 'none' else None) }}">{{ icon('plus') }}<span>New</span></a>
+  </div>
+</header>
+
+<form class="toolbar" method="get" id="deckFilter">
+  <select name="subject" aria-label="Subject" data-autosubmit>
+    <option value="">All subjects</option><option value="none" {{ 'selected' if subject == 'none' }}>No subject</option>
+    {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if subject == s.id }}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <div class="seg seg-compact">
+    <a class="seg-item{% if mode == 'due' %} active{% endif %}" href="{{ url_for('flashcards.study', subject=subject, mode='due') }}">Due <b>{{ stats.due }}</b></a>
+    <a class="seg-item{% if mode == 'all' %} active{% endif %}" href="{{ url_for('flashcards.study', subject=subject, mode='all') }}">All <b>{{ stats.total }}</b></a>
+  </div>
+  <input type="hidden" name="mode" value="{{ mode }}">
+</form>
+
+{% if stats.total == 0 %}
+<section class="panel">{{ empty('cards', 'No flashcards yet', 'Create a card to start active recall.', url_for('flashcards.create'), 'Create a card') }}</section>
+{% elif not cards %}
+<section class="panel">{{ empty('check', 'All caught up', 'No cards are due right now. Come back later, or review the whole deck.', url_for('flashcards.study', subject=subject, mode='all'), 'Review all cards') }}</section>
+{% else %}
+<section class="study" id="study" data-review-url="{{ url_for('flashcards.study') }}">
+  <div class="study-top">
+    <span class="muted small" id="progressText">Card 1 of {{ cards|length }}</span>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="{{ cards|length }}" aria-valuenow="0" id="progressBar"><i></i></div>
+    <button class="icon-btn sm" id="shuffleBtn" type="button" aria-pressed="false" aria-label="Shuffle cards">{{ icon('shuffle') }}</button>
+  </div>
+
+  <div class="flip" id="flip">
+    <button class="flip-inner" id="flipCard" type="button" title="Flip card">
+      <span class="face front"><small class="face-label" id="faceSubject"></small><span class="face-text" id="frontText"></span><small class="hint">Tap to reveal the answer</small></span>
+      <span class="face back"><small class="face-label">Answer</small><span class="face-text" id="backText"></span></span>
+    </button>
+  </div>
+
+  <div class="study-nav">
+    <button class="icon-btn" id="prevBtn" type="button" aria-label="Previous card">{{ icon('chevron-left') }}</button>
+    <button class="btn btn-ghost btn-sm" id="flipBtn" type="button">{{ icon('flip') }}<span>Flip</span></button>
+    <button class="icon-btn" id="nextBtn" type="button" aria-label="Next card">{{ icon('chevron-right') }}</button>
+  </div>
+  <div class="study-actions" id="gradeRow" hidden>
+    <button class="btn btn-warn" id="reviseBtn" type="button">{{ icon('reset') }}<span>Revise again</span></button>
+    <button class="btn btn-ok" id="rememberBtn" type="button">{{ icon('check') }}<span>Remembered</span></button>
+  </div>
+  <p class="muted small center">Space flips · ← → navigate · Remembered moves a card to a longer review interval.</p>
+</section>
+
+<section class="panel center hidden-until" id="doneCard" hidden>
+  {{ icon('check', 'big ok') }}
+  <h2>Session complete</h2>
+  <p class="muted" id="doneText"></p>
+  <div class="form-actions center-actions">
+    <a class="btn btn-ghost" href="{{ url_for('flashcards.study', subject=subject, mode='all') }}">Review all</a>
+    <a class="btn btn-primary" href="{{ url_for('flashcards.study', subject=subject, mode=mode) }}">Study again</a>
+  </div>
+</section>
+<script type="application/json" id="deckData">{{ cards|tojson }}</script>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if cards %}<script src="{{ asset('js/flashcards.js') }}" defer></script>{% endif %}{% endblock %}

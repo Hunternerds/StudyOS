@@ -1,0 +1,14 @@
+.env
+instance/
+data/
+*.db
+*.db-journal
+*.sqlite3
+*.backup-*
+__pycache__/
+*.pyc
+.venv/
+venv/
+_legacy/
+.pytest_cache/
+.DS_Store

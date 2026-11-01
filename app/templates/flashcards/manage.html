@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import empty %}
+{% block title %}Manage flashcards · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><p class="eyebrow">Flashcards</p><h1>Manage cards</h1></div>
+  <div class="head-actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('flashcards.study') }}">{{ icon('target') }}<span>Study</span></a>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('flashcards.create') }}">{{ icon('plus') }}<span>New</span></a>
+  </div>
+</header>
+<form class="toolbar" method="get" role="search">
+  <label class="searchbox">{{ icon('search') }}<input type="search" name="q" value="{{ q }}" placeholder="Search cards" maxlength="100" aria-label="Search cards"></label>
+  <select name="subject" aria-label="Subject" data-autosubmit>
+    <option value="">All subjects</option><option value="none" {{ 'selected' if subject == 'none' }}>No subject</option>
+    {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if subject == s.id }}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+</form>
+{% if cards %}
+<ul class="rows panel flush">
+  {% for c in cards %}
+  <li class="row">
+    <div class="row-main"><strong class="clamp">{{ c.question }}</strong><small class="clamp">{% if c.subject_name %}<span class="dot" style="--c: {{ c.subject_color }}"></span>{{ c.subject_name }} · {% endif %}{{ c.answer }}</small></div>
+    <span class="pill">Box {{ c.box }}</span>
+    <a class="icon-btn sm" href="{{ url_for('flashcards.edit', card_id=c.id) }}" aria-label="Edit card">{{ icon('edit') }}</a>
+    <form method="post" action="{{ url_for('flashcards.delete', card_id=c.id) }}" data-confirm="Delete this card? This can't be undone.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+      <button class="icon-btn sm danger" type="submit" aria-label="Delete card">{{ icon('trash') }}</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% elif q or subject is not none %}
+<section class="panel">{{ empty('search', 'No cards match', 'Try another search or subject.', url_for('flashcards.manage'), 'Clear') }}</section>
+{% else %}
+<section class="panel">{{ empty('cards', 'No flashcards yet', 'Create your first card.', url_for('flashcards.create'), 'Create a card') }}</section>
+{% endif %}
+{% endblock %}

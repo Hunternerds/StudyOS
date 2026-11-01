@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "partials/charts.html" import empty %}
+{% block title %}Assignments · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><p class="eyebrow">Plan</p><h1>Tasks &amp; Assignments</h1></div>
+  <a class="btn btn-primary" href="{{ url_for('tasks.create') }}">{{ icon('plus') }}<span>New</span></a>
+</header>
+
+<form class="toolbar" method="get" action="{{ url_for('tasks.index') }}" role="search">
+  <label class="searchbox">{{ icon('search') }}<input type="search" name="q" value="{{ q }}" placeholder="Search assignments" maxlength="100" aria-label="Search assignments"></label>
+  <select name="subject" aria-label="Subject" data-autosubmit>
+    <option value="">All subjects</option>
+    <option value="none" {{ 'selected' if subject == 'none' }}>No subject</option>
+    {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if subject == s.id }}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <select name="sort" aria-label="Sort by" data-autosubmit>
+    {% for key, (label, _) in sorts.items() %}<option value="{{ key }}" {{ 'selected' if sort == key }}>Sort: {{ label }}</option>{% endfor %}
+  </select>
+  <input type="hidden" name="status" value="{{ status }}">
+  <button class="btn btn-ghost btn-sm" type="submit">Apply</button>
+</form>
+
+<div class="seg" role="tablist" aria-label="Status filter">
+  {% for key, label in statuses %}
+  <a class="seg-item{% if status == key %} active{% endif %}" href="{{ url_for('tasks.index', status=key, q=q or None, subject=(subject if subject is not none else None), sort=sort) }}">{{ label }} <b>{{ counts[key] }}</b></a>
+  {% endfor %}
+</div>
+
+{% if tasks %}
+<ul class="rows panel flush task-list">
+  {% for t in tasks %}
+  <li class="row task{% if t.completed %} done{% endif %}{% if t.overdue %} overdue{% endif %}">
+    <form method="post" action="{{ url_for('tasks.toggle', task_id=t.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+      <button class="check{% if t.completed %} on{% endif %}" type="submit" aria-label="{{ 'Mark as pending' if t.completed else 'Mark as completed' }}">{{ icon('check') }}</button>
+    </form>
+    <div class="row-main">
+      <a href="{{ url_for('tasks.edit', task_id=t.id) }}"><strong>{{ t.title }}</strong></a>
+      <small>
+        {% if t.subject_name %}<span class="dot" style="--c: {{ t.subject_color }}"></span>{{ t.subject_name }} · {% endif %}
+        {% if t.completed %}Completed{% elif t.due_date %}<span class="{{ 'bad' if t.overdue }}">{% if t.overdue %}{{ icon('alert', 'inline') }}{% endif %}{{ t.due_text }}</span>{% else %}No deadline{% endif %}
+      </small>
+    </div>
+    <span class="pill pill-{{ t.priority|lower }}">{{ t.priority }}</span>
+    <form method="post" action="{{ url_for('tasks.delete', task_id=t.id) }}" data-confirm="Delete “{{ t.title }}”? This can't be undone.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+      <button class="icon-btn sm danger" type="submit" aria-label="Delete assignment">{{ icon('trash') }}</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% elif filtered %}
+<section class="panel">{{ empty('search', 'No matching assignments', 'Try a different filter or clear your search.', url_for('tasks.index'), 'Clear filters') }}</section>
+{% else %}
+<section class="panel">{{ empty('tasks', 'No assignments yet', 'Add your first assignment and give it a deadline.', url_for('tasks.create'), 'New assignment') }}</section>
+{% endif %}
+{% endblock %}

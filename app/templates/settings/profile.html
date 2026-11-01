@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Profile · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head"><div><p class="eyebrow">Account</p><h1>Profile</h1></div></header>
+<section class="panel profile-head">
+  <span class="avatar big">{{ current_user.display_name[:1]|upper }}</span>
+  <div><strong>{{ current_user.display_name }}</strong><small class="muted">{{ current_user.email }} · member since {{ current_user.created_at|localdt('%d %b %Y') }}</small></div>
+</section>
+<section class="panel statbar statbar-5">
+  {% for label, value in counts.items() %}<div class="stat"><strong>{{ value }}</strong><span>{{ label }}</span></div>{% endfor %}
+</section>
+<form method="post" action="{{ url_for('settings.profile_update') }}" class="panel form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Details</h2>
+  <label class="field"><span>Name</span><input name="name" value="{{ current_user.display_name }}" maxlength="60" required></label>
+  <label class="field"><span>Email</span><input type="email" name="email" value="{{ current_user.email }}" maxlength="254" required autocomplete="username"></label>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Save details</button></div>
+</form>
+<form method="post" action="{{ url_for('settings.profile_password') }}" class="panel form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Change password</h2>
+  <label class="field"><span>Current password</span><input type="password" name="current" autocomplete="current-password" required></label>
+  <label class="field"><span>New password</span><input type="password" name="new" autocomplete="new-password" required minlength="8" maxlength="128"></label>
+  <label class="field"><span>Confirm new password</span><input type="password" name="confirm" autocomplete="new-password" required maxlength="128"></label>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Update password</button></div>
+</form>
+<form method="post" action="{{ url_for('settings.profile_delete') }}" class="panel form danger-zone" data-confirm="Permanently delete your account and ALL of your data? This cannot be undone.">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Delete account</h2>
+  <p class="muted">Removes your profile, subjects, assignments, notes, flashcards and study history.</p>
+  <label class="field"><span>Confirm with your password</span><input type="password" name="password" autocomplete="current-password" required></label>
+  <div class="form-actions"><button class="btn btn-danger" type="submit">Delete my account</button></div>
+</form>
+{% endblock %}

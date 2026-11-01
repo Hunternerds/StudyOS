@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Settings · StudyOS{% endblock %}
+{% block content %}
+<header class="page-head"><div><p class="eyebrow">Personalise</p><h1>Settings</h1></div></header>
+
+<form method="post" action="{{ url_for('settings.save_appearance') }}" class="panel form" id="appearanceForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Appearance</h2>
+  <fieldset class="field"><legend>Background</legend>
+    <div class="presets">
+      {% for key, label in presets %}
+      <label class="preset" data-preset="{{ key }}"><input type="radio" name="bg_preset" value="{{ key }}" {{ 'checked' if s.bg_preset == key }}><i class="preset-art" data-bg="{{ key }}"></i><span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <div class="switches">
+    <label class="switch"><input type="checkbox" name="bg_animated" value="1" {{ 'checked' if s.bg_animated }}><i></i><span>Animated background</span></label>
+    <label class="switch"><input type="checkbox" name="reduce_motion" value="1" {{ 'checked' if s.reduce_motion }}><i></i><span>Reduce motion everywhere</span></label>
+  </div>
+  <label class="field"><span>Background intensity <output>{{ s.bg_intensity }}</output>%</span><input type="range" name="bg_intensity" min="20" max="100" value="{{ s.bg_intensity }}" data-output></label>
+  <fieldset class="field"><legend>Accent color</legend>
+    <div class="swatches">
+      {% for key, (rgb, label) in accents.items() %}<label class="swatch" style="--c: rgb({{ rgb }})" title="{{ label }}"><input type="radio" name="accent" value="{{ key }}" {{ 'checked' if s.accent == key }}><i></i><span class="sr">{{ label }}</span></label>{% endfor %}
+    </div>
+  </fieldset>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Save appearance</button></div>
+</form>
+
+<form method="post" action="{{ url_for('settings.save_timer') }}" class="panel form" id="timer">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Focus timer</h2>
+  {% include "partials/timer_fields.html" %}
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Save timer settings</button></div>
+</form>
+
+<section class="panel"><h2>Account</h2><p class="muted">Change your name, email or password, or delete your account.</p>
+  <a class="btn btn-ghost" href="{{ url_for('settings.profile') }}">{{ icon('user') }}<span>Open profile</span></a>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ asset('js/settings.js') }}" defer></script>{% endblock %}
