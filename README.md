@@ -1,132 +1,472 @@
-# StudyOS
+🎓 StudyOS — Your Personal Academic Workspace
 
-A personal academic workspace for college and university students: subjects, assignments, notes,
-spaced-repetition flashcards, an immersive Pomodoro-style focus timer, study analytics, and a private
-account for every user.
+<p align="center">
+  <strong>Study smarter. Stay organized. Achieve more.</strong>
+</p><p align="center">
+  A modern, privacy-focused academic workspace designed to help college and university students manage their entire study life in one place.
+</p><p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Flask-Web%20Framework-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+</p>---
 
-Stack: **Python + Flask**, **SQLite**, Jinja2, vanilla JS and CSS. The only dependency is Flask
-(Werkzeug and Jinja2 come with it, all pure Python, so it installs on Android/Termux without compiling anything).
+✨ Overview
 
-## Quick start
+StudyOS is an all-in-one academic productivity platform that brings your subjects, assignments, notes, flashcards, focus sessions, and study analytics together in a single, beautifully designed workspace.
 
-```bash
-python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env                                   # then set SECRET_KEY (see below)
-python run.py                                          # http://localhost:5000
-```
+Instead of switching between multiple apps to organize your academic life, StudyOS gives you everything you need in one private, personalized environment.
 
-Create an account on the Register page. The database is created and upgraded automatically on start
-(`python -m flask --app run init-db` does the same thing on demand).
+Built with Python and Flask, it is lightweight, fast, mobile-friendly, and designed to run even on Android through Termux.
 
-Generate a secret key: `python -c "import secrets; print(secrets.token_hex(32))"`
+🚀 Features
 
-### Android (Termux)
+📊 1. Intelligent Dashboard
 
-```bash
-pkg install python git && pip install flask
-python run.py            # open http://localhost:5000 in Chrome on the same phone
-```
+Get a complete overview of your academic progress.
 
-## Upgrading from the old single-user StudyOS
+- Personalized greeting and current date.
+- Total subjects, assignments, notes, and study time.
+- Assignment completion progress ring.
+- Seven-day study activity chart.
+- Study time breakdown by subject.
+- Daily study streak tracking.
+- Upcoming assignment deadlines.
+- Recent study sessions and completed tasks.
 
-Your existing `data/studyos.db` is detected and used automatically. On first start:
+📚 2. Subject Management
 
-1. A timestamped backup is written next to it (`studyos.db.backup-YYYYMMDD-HHMMSS`).
-2. The schema is upgraded in place (versioned migrations, `PRAGMA user_version`); no rows are dropped.
-3. The **first account you register adopts all pre-existing data** (subjects, tasks, notes, sessions, flashcards).
-   Any later account starts with an empty, private workspace.
+Keep your academic subjects organized.
 
-Flashcards now keep existing cards when their subject is deleted (previously they were deleted with it).
+- Create, edit, and delete subjects.
+- Custom subject colours.
+- Individual subject statistics.
+- View assignments, notes, and sessions associated with each subject.
+- Dedicated subject overview.
 
-## Features
+📝 3. Assignment Manager
 
-| Area | What you get |
-|---|---|
-| Navigation | Hamburger slide-out menu (scroll-locked page, overlay, Escape / tap-outside / link-select closes, active page derived from the real Flask route). Bottom dock has only Dashboard and Focus Timer. |
-| Dashboard | Greeting, date, stats, assignment completion ring, 7-day activity chart, time by subject, streak, deadlines, recent sessions / completed tasks / notes. Everything is computed from your database rows. |
-| Focus timer | Focus / short break / long break / custom. Absolute end-timestamp timing (no drift when the tab sleeps or the phone locks), pause/resume/reset/skip, session counter, auto-start options, chime, optional ambient noise (generated in the browser), fullscreen, screen wake-lock, immersive mode with controls that auto-hide after ~3 s and reappear on mouse / touch / keyboard. A finished focus session is saved exactly once (idempotent session key); breaks are never counted; a running timer survives page reloads. |
-| Subjects | CRUD, colours, per-subject statistics, links to everything attached to the subject. |
-| Assignments | CRUD, priority, deadline, subject, complete/uncomplete, filter, search, sort, overdue highlighting. |
-| Notes | Plain-text editor with debounced autosave, search, subject filter, created / modified dates. |
-| Flashcards | One card at a time, flip animation, shuffle, previous/next, progress, "Remembered" / "Revise again", Leitner spaced repetition (see below). Separate Manage page for create / edit / delete / search. |
-| History | Totals, per-subject time, daily / weekly (8 weeks) / monthly (6 months) charts, recent sessions, date-range and subject filters. |
-| Settings | 6 backgrounds, animation on/off, intensity, reduce-motion, accent colour, and all timer options, saved per user. |
-| Accounts | Register, login, logout, profile, name/email change, password change, account deletion. |
+Never lose track of an assignment again.
 
-### Spaced repetition
+- Create, edit, and delete assignments.
+- Assign subjects and priorities.
+- Set deadlines.
+- Mark assignments as completed or pending.
+- Search and filter assignments.
+- Sort by deadline, priority, or status.
+- Automatic overdue highlighting.
 
-Leitner boxes 1-5. **Remembered** moves a card up one box and schedules it after 1 / 3 / 7 / 14 / 30 days.
-**Revise again** drops it to box 1 and keeps it due today (it also comes back at the end of the current session).
-New cards are due immediately. The "Due" tab shows what is due; "All" lets you browse the whole deck.
+📖 4. Smart Notes
 
-## Security notes
+Your personal digital notebook.
 
-* Passwords: Werkzeug PBKDF2-SHA256 (600 000 iterations), never stored or logged in plaintext.
-* Sessions: signed, `HttpOnly`, `SameSite=Lax`, `Secure` automatically in production, sliding 7-day expiry, session reset on login and password change.
-* CSRF: per-session token required on every POST (forms and `fetch`), constant-time comparison.
-* Login rate limiting: 5 failures / 15 min per email (and a wider per-IP limit), stored in the database so it works across workers. Registration is limited per IP. Unknown emails take the same time as wrong passwords and get the same message.
-* Data isolation: every query on private data filters by `user_id`; ids from the URL or form (including `subject_id`) are checked for ownership; foreign records return 404.
-* SQL injection: all values use `?` placeholders; the few dynamic SQL fragments come from fixed whitelists; `LIKE` wildcards in searches are escaped.
-* Output is escaped by Jinja; strict CSP (`script-src 'self'`, no inline scripts), `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Cache-Control: no-store`.
-* Errors: users see a generic page; details go only to the server log.
-* Secrets come from environment variables; production refuses to start without `SECRET_KEY`.
-* Open redirects on `?next=` are blocked.
-* Fonts (DM Sans, Outfit) load from Google Fonts; the CSP allows exactly those two hosts. If you need zero third-party requests, download the fonts into `app/static/fonts` and replace the `<link>` in `base.html`.
+- Create and edit notes.
+- Automatic debounced saving.
+- Search through your notes.
+- Filter notes by subject.
+- Track creation and modification dates.
+- Simple, distraction-free writing experience.
 
-## Tests
+🧠 5. Spaced-Repetition Flashcards
 
-```bash
-python -m unittest discover -s tests -v      # 28 backend tests (auth, isolation, timer API, features, migration)
-node --test tests/timer-core.test.js         # 14 timer-engine tests (fake clock)
-pip install playwright && playwright install chromium
-python tests/browser_check.py                # 81 real-browser checks; screenshots go to instance/shots/
-```
+Make revision more effective with the Leitner learning system.
 
-## Production / deployment
+- Create, edit, and delete flashcards.
+- Interactive card-flipping animation.
+- One-card-at-a-time learning experience.
+- Shuffle and navigation controls.
+- Track learning progress.
+- Separate Due and All collections.
+- Remembered and Revise Again actions.
+- Five-level Leitner spaced repetition.
 
-```bash
-export STUDYOS_ENV=production SECRET_KEY=<long random value> DATABASE_PATH=/var/data/studyos.db
-pip install gunicorn
-gunicorn -w 2 -b 0.0.0.0:8000 run:app        # on Windows use: pip install waitress; waitress-serve --port 8000 run:app
-```
+Leitner scheduling:
 
-* Serve over HTTPS (the secure cookie flag is on in production). Behind a reverse proxy set `TRUSTED_PROXIES=1`.
-* SQLite needs a **persistent disk**. On hosts with an ephemeral filesystem (free tiers of Render/Heroku-style platforms) use a persistent volume or you will lose data on every deploy.
+Box| Next Review
+Box 1| 1 day
+Box 2| 3 days
+Box 3| 7 days
+Box 4| 14 days
+Box 5| 30 days
 
-### GitHub
+Remembered cards advance to the next box. Cards marked for revision return to Box 1 and become due again.
 
-```bash
-git init && git add . && git commit -m "StudyOS"
-git branch -M main
-git remote add origin https://github.com/<you>/studyos.git
-git push -u origin main
-```
+⏱️ 6. Immersive Focus Timer
 
-`.env`, databases, `instance/` and `data/` are git-ignored, so secrets and user data are never pushed.
-Then connect the repository to your host (Render, Railway, Fly.io, PythonAnywhere), set the environment
-variables above, and use `gunicorn run:app` as the start command.
+A distraction-free study timer with advanced controls.
 
-### Moving to PostgreSQL later
+- Focus sessions.
+- Short breaks.
+- Long breaks.
+- Custom timer durations.
+- Pause, resume, reset, and skip.
+- Automatic session counting.
+- Optional automatic break and focus starts.
+- Completion chime.
+- Browser-generated ambient sounds.
+- Fullscreen mode.
+- Screen Wake Lock support.
+- Immersive interface with auto-hiding controls.
+- Persistent timer state across page reloads.
+- Accurate absolute-end-timestamp timing.
+- Exactly-once saving of completed focus sessions.
 
-All SQL is confined to `app/db.py`, `app/analytics/service.py` and the blueprint route modules, and uses
-standard constructs. Porting means swapping `get_db()` for a psycopg connection (placeholders `?` -> `%s`),
-and replacing the handful of SQLite-isms: `INSERT OR IGNORE` (-> `ON CONFLICT DO NOTHING`), `PRAGMA user_version`
-migrations (-> a `schema_version` table), `COLLATE NOCASE` (-> `citext` / `lower()`), and `CURRENT_TIMESTAMP` text dates.
+📈 7. Study Analytics & History
 
-## Project layout
+Understand your productivity with meaningful statistics.
 
-```
+- Total study time.
+- Subject-wise study breakdown.
+- Daily activity charts.
+- Weekly analytics covering eight weeks.
+- Monthly analytics covering six months.
+- Recent study session history.
+- Date-range filtering.
+- Subject-based filtering.
+
+🎨 8. Personalization & Settings
+
+Make StudyOS your own.
+
+- Six background themes.
+- Custom accent colours.
+- Animations on/off.
+- Adjustable animation intensity.
+- Reduced-motion support.
+- Configurable focus and break durations.
+- Timer automation preferences.
+- Optional sound settings.
+- User-specific preferences.
+
+🔐 9. Private User Accounts
+
+Every user gets an independent academic workspace.
+
+- User registration and login.
+- Secure logout.
+- Profile management.
+- Name and email updates.
+- Password changes.
+- Account deletion.
+- Private subjects, assignments, notes, and flashcards.
+- Per-user settings and study history.
+
+---
+
+🛠️ Technology Stack
+
+StudyOS uses a lightweight Python-based architecture without unnecessary dependencies.
+
+Technology| Purpose
+Python| Backend programming
+Flask| Web application framework
+SQLite| Database
+Jinja2| Server-side templates
+HTML5| Application structure
+CSS3| Styling and responsive layouts
+Vanilla JavaScript| Interactive functionality
+Werkzeug| Password hashing and security
+
+Dependency philosophy: Flask is the only required Python dependency. Werkzeug and Jinja2 are included with Flask.
+
+Gunicorn is used for production deployment.
+
+---
+
+📂 Project Structure
+
 StudyOS/
+│
 ├── app/
-│   ├── __init__.py        app factory, security headers, error pages
-│   ├── db.py              SQLite access + versioned migrations
-│   ├── security.py        CSRF, auth guard, rate limiting, validators
-│   ├── helpers.py         settings, local time, formatting, icons, nav model
-│   ├── ownership.py       ownership checks used by every private lookup
-│   ├── auth/ dashboard/ subjects/ tasks/ notes/ flashcards/ timer/ analytics/ settings/   (blueprints)
-│   ├── templates/         Jinja templates (+ partials: icon sprite, charts, timer fields)
-│   └── static/            css/, js/ (timer-core.js is pure logic), images/ (your logo, all sizes)
-├── tests/                 backend, timer-engine and browser tests
-├── config.py  run.py  requirements.txt  .env.example  .gitignore
-```
+│   ├── __init__.py
+│   ├── db.py
+│   ├── security.py
+│   ├── helpers.py
+│   ├── ownership.py
+│   │
+│   ├── auth/
+│   ├── dashboard/
+│   ├── subjects/
+│   ├── tasks/
+│   ├── notes/
+│   ├── flashcards/
+│   ├── timer/
+│   ├── analytics/
+│   ├── settings/
+│   │
+│   ├── templates/
+│   │   └── partials/
+│   │
+│   └── static/
+│       ├── css/
+│       ├── js/
+│       └── images/
+│
+├── tests/
+│   ├── backend tests
+│   ├── timer-core.test.js
+│   └── browser_check.py
+│
+├── config.py
+├── run.py
+├── requirements.txt
+├── .env.example
+└── .gitignore
+
+---
+
+⚡ Installation & Setup
+
+Requirements
+
+- Python 3.10 or newer.
+- Git (optional).
+- A modern web browser.
+
+1. Clone the repository
+
+git clone https://github.com/Hunternerds/StudyOS.git
+
+cd StudyOS
+
+2. Create a virtual environment
+
+Windows:
+
+python -m venv .venv
+.venv\Scripts\activate
+
+Linux / macOS:
+
+python -m venv .venv
+source .venv/bin/activate
+
+3. Install dependencies
+
+pip install -r requirements.txt
+
+4. Configure environment variables
+
+Copy the example environment file:
+
+cp .env.example .env
+
+Generate a secure secret key:
+
+python -c "import secrets; print(secrets.token_hex(32))"
+
+Add the generated key to your ".env" file as "SECRET_KEY".
+
+5. Start StudyOS
+
+python run.py
+
+Open your browser:
+
+http://localhost:5000
+
+Create your account and start organizing your academic life!
+
+---
+
+📱 Android / Termux Support
+
+StudyOS is designed to run on Android without requiring native compilation.
+
+Install the required packages:
+
+pkg update && pkg install python git
+
+Install Flask:
+
+pip install flask
+
+Clone the repository:
+
+git clone https://github.com/Hunternerds/StudyOS.git
+
+Navigate into the project:
+
+cd StudyOS
+
+Start the application:
+
+python run.py
+
+Visit:
+
+http://127.0.0.1:5000
+
+You can now use StudyOS directly from Chrome or another browser on your phone.
+
+---
+
+🧪 Testing
+
+StudyOS includes automated tests covering backend functionality, timer logic, and browser interactions.
+
+Backend tests
+
+python -m unittest discover -s tests -v
+
+28 backend tests covering authentication, data isolation, timer APIs, application features, and database migrations.
+
+Timer engine tests
+
+node --test tests/timer-core.test.js
+
+14 timer tests using a fake clock to validate timer behaviour.
+
+Browser tests
+
+Install Playwright:
+
+pip install playwright
+
+Install Chromium:
+
+playwright install chromium
+
+Run browser checks:
+
+python tests/browser_check.py
+
+81 browser checks covering real browser interactions. Screenshots are saved in "instance/shots/".
+
+---
+
+🔒 Security & Privacy
+
+Privacy and security are fundamental parts of StudyOS.
+
+Security Feature| Implementation
+Password security| PBKDF2-SHA256 with 600,000 iterations
+Session security| Signed, HttpOnly cookies
+CSRF protection| Per-session tokens
+Login protection| Database-backed rate limiting
+Data isolation| User-specific database queries
+SQL injection protection| Parameterized SQL queries
+Output protection| Jinja2 autoescaping
+Content security| Strict Content Security Policy
+Clickjacking protection| X-Frame-Options
+Secret management| Environment variables
+Error handling| Generic user-facing error pages
+
+Additional protections include secure cookie settings in production, ownership checks for private resources, open-redirect protection, and constant-time CSRF token comparison.
+
+Your academic data stays separated between accounts.
+
+---
+
+🌐 Production Deployment
+
+StudyOS supports deployment using a production WSGI server.
+
+Install Gunicorn
+
+pip install gunicorn
+
+Configure production environment
+
+export STUDYOS_ENV=production
+export SECRET_KEY=your-long-random-secret
+export DATABASE_PATH=/var/data/studyos.db
+
+Start the application
+
+gunicorn -w 2 -b 0.0.0.0:8000 run:app
+
+For Windows, you can use Waitress:
+
+pip install waitress
+
+waitress-serve --port 8000 run:app
+
+Hosting platforms
+
+You can deploy StudyOS on platforms such as:
+
+- "Render" (https://render.com/)
+- "Railway" (https://railway.com/)
+- "Fly.io" (https://fly.io/)
+- "PythonAnywhere" (https://www.pythonanywhere.com/)
+
+Important: SQLite requires persistent storage. If your hosting provider uses an ephemeral filesystem, configure a persistent volume or your database may be lost during redeployment.
+
+For production, always use HTTPS and a persistent database location.
+
+---
+
+🔄 Database Migration
+
+Upgrading from the previous single-user StudyOS version is supported.
+
+On the first upgraded startup:
+
+1. An automatic timestamped database backup is created.
+2. Existing database tables are upgraded using versioned migrations.
+3. Existing records are preserved.
+4. The first registered account adopts the existing single-user data.
+5. Subsequent accounts receive independent, empty workspaces.
+
+Flashcards are also preserved when their associated subjects are deleted.
+
+---
+
+🗄️ Future Database Migration
+
+The application currently uses SQLite for simplicity and portability.
+
+A future PostgreSQL migration can be implemented by replacing the database connection layer and adapting SQLite-specific SQL constructs.
+
+The current architecture keeps most database operations concentrated in:
+
+- "app/db.py"
+- "app/analytics/service.py"
+- Blueprint route modules.
+
+---
+
+🤝 Contributing
+
+Contributions, suggestions, bug reports, and improvements are welcome!
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Run the existing tests.
+5. Submit a pull request.
+
+For major changes, consider opening an issue first to discuss your proposal.
+
+---
+
+📜 License
+
+This project is distributed under the MIT License.
+
+See the "LICENSE" file for details.
+
+---
+
+⭐ Support the Project
+
+If you find StudyOS useful:
+
+- ⭐ Star this repository.
+- 🍴 Fork it and make your own improvements.
+- 🐛 Report bugs and suggest features.
+- 📢 Share it with other students.
+
+Your support helps the project grow!
+
+---
+
+<p align="center">
+  <strong>StudyOS</strong>
+  <br>
+  Your academics. Your workspace. Your progress.
+  <br><br>
+  Made with ❤️ for students.
+</p>
